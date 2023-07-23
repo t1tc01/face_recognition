@@ -1,0 +1,184 @@
+[tool.poetry]
+name = "fastapi-quickstart"
+version = "0.0.1"
+description = ""
+authors = ["Kostiantyn Salnykov <kostiantyn.salnykov@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "fastapi_quickstart"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = {extras = ["standard"], version = "^0.99.1"}
+asyncpg = "^0.27.0"
+SQLAlchemy = {extras = ["asyncion", "mypy"], version = "^2.0.17"}
+pydantic = {extras = ["dotenv", "email"], version = "^1.10.11"}
+alembic = "^1.10.2"
+orjson = "^3.8.7"
+uvicorn = {extras = ["standard"], version = "^0.22.0"}
+gunicorn = "^20.1.0"
+psycopg2-binary = "^2.9.3"
+phonenumbers = "^8.13.7"
+httpx = "^0.24.1"
+bcrypt = "^4.0.1"
+PyJWT = "^2.6.0"
+typer = {extras = ["all"], version = "^0.9.0"}
+redis = {extras = ["hiredis"], version = "^4.4.1"}
+pendulum = "^2.1.2"
+uuid7 = "^0.1.0"
+
+
+[tool.poetry.group.lint.dependencies]
+black = "^23.1.0"
+isort = "^5.10.1"
+flake8 = "^5.0.4"
+xenon = "^0.9.0"
+mypy = "^1.1.1"
+ruff = "^0.0.276"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.1.3"
+pytest-asyncio = "^0.21.0"
+pytest-mock = "^3.8.2"
+pytest-sugar = "^0.9.5"
+pytest-cov = "^4.0.0"
+pytest-randomly = "^3.12.0"
+pytest-clarity = "^1.0.1"
+Faker = "^18.3.0"
+pydantic-factories = "^1.17.2"
+pytest-alembic = "^0.10.0"
+factory-boy = "^3.2.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+# === Black ===
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  | dist
+  | .pytest_cache
+  | .tox
+  | docs
+  | docs_src
+  | .venv
+  | .mypy_cache
+)/
+'''
+
+# === Isort ===
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 120
+skip_glob = []
+
+
+# === Pytest ===
+[tool.pytest.ini_options]
+markers = [
+    'debug: marks tests as debug (deselect with -m "not debug")',
+]
+#addopts = """\
+#--maxfail=1
+#-rf
+#--test-alembic
+#--randomly-dont-reset-seed
+#"""
+norecursedirs = ["venv", ".venv", ".env", "migrations",]
+testpaths = ["tests",]
+python_files = ["test*.py", "*test.py"]
+python_functions = ["*_test", "test_*"]
+console_output_style = "progress"
+asyncio_mode = "auto"
+log_cli = true
+pytest_alembic_tests_folder = "tests/migrations"
+
+# === Coverage ===
+[tool.coverage.run]
+parallel = true
+branch = true
+source = ["apps",]
+omit = ["*/*.local/*", "*/*.idea*/*", "*/*.venv*/*", "*/*test*", "*__init__*", "*/*migrations*" , "*/*interfaces.py"]
+
+[tool.coverage.report]
+ignore_errors = true
+sort = "-Cover"
+precision = 2
+omit = ["*/*.local/*", "*/*.idea*/*", "*/*.venv*/*", "*/*test*", "*__init__*", "*/*migrations*" , "*/*interfaces.py"]
+exclude_lines = ["pragma: no cover", "if __name__ = .__main__.:"]
+
+[tool.coverage.html]
+directory = ".coverage"
+
+[tool.mypy]
+python_version = "3.10"
+files = ['*.py', '**/*.py']
+exclude = ["docs*", "coverage", "tests"]
+plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
+no_site_packages = true
+follow_imports = "skip"
+ignore_missing_imports = true
+strict_optional = false
+warn_return_any = false
+warn_unused_ignores = true
+show_error_codes = true
+no_implicit_optional = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+check_untyped_defs = true
+#disallow_any_unimported = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
+
+# === Ruff ===
+[tool.ruff]
+line-length = 120
+select = [
+    "E",  # pycodestyle
+    "F",  # pyflakes
+    "UP", # pyupgrade
+    "D",  # pydocstyle
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "PTH",  # flake8-use-pathlib
+    "DTZ",  # flake8-datetimez
+    #    "S",  # flake8-bandit
+    "N",  # PEP8-naming
+    "I",  # isort
+    "PT"  # flake8-pytest-style
+]
+ignore = [
+    "F403",
+    "B008",
+    "B026",
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+    "N805",
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
