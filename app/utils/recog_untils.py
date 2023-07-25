@@ -6,7 +6,7 @@ from numpy.linalg import norm
 
 
 client = httpclient.InferenceServerClient(url="localhost:8000")
-
+threshold = 0.98
 
 #Prerocess image after crop
 def recog_preprocess(image, mean=127.5, std=0.0078125):
@@ -70,7 +70,7 @@ def iden(feat_img,feat_list):
         scores.append(cosine)
     
     max_indices = np.argmax(np.array(scores))
-    if scores[max_indices] > 0.95:
+    if scores[max_indices] > threshold:
         return max_indices, scores[max_indices]
     return -1, scores[max_indices]
 

@@ -1,3 +1,7 @@
+"""
+Get new class from local
+"""
+
 import tritonclient.http as httpclient
 import cv2 
 import numpy as np
@@ -5,8 +9,8 @@ import os
 
 from utils.detect_utils import *
 
-PATH_TARGET = "target" #
-PATH_CLASS = "class.txt"
+PATH_TARGET  = "/media/hoangphan/Data/code/acs/face_recog/save/target"
+PATH_CLASS = "/media/hoangphan/Data/code/acs/face_recog/save/class.txt"
 
 def create_new_class():
     print("Khởi tạo id và tên người mới (cách ra một dấu cách) VD: <id>_<username>:")
@@ -19,15 +23,17 @@ def create_new_class():
     with open(PATH_CLASS, "r") as file:
         content = file.read()
         if id in content:
+            print(content)
             print("ID đã tồn tại!")
             return -1
-    with open("class.txt", "a") as file:
+    with open(PATH_CLASS, "a") as file:
         file.write(text + "\n")
         os.mkdir(os.path.join(PATH_TARGET,str(id)))
         print("Đã khởi tạo: ", id, name)
         return id
 
 if __name__ == "__main__":
+
     id = create_new_class()
     if id == -1:
         exit()
