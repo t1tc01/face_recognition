@@ -3,9 +3,13 @@ import base64
 import time
 
 from router.camera_multi import Camera
-from utils.detect_utils import *
-from utils.recog_untils import *
-from utils.file_utils import *
+from utils.recog_utils_grpc import *
+from utils.detect_utils_grpc import *
+from utils.file_utils_2 import *
+
+#from utils.file_utils import *
+# from utils.detect_utils import *
+# from utils.recog_untils import *
 
 
 #
@@ -56,7 +60,7 @@ def process_frame_for_get_data(frame):
     return raw_image, list_face
 
 #Save list face
-def save_list_face():
+def save_list_face(list_face):
     for i in range(len(list_face)):
         face = cv2.resize(list_face[i], (112,112))
         name_face = str(id) + "_" + str(time.time()) + ".jpg"
@@ -66,7 +70,7 @@ def save_list_face():
 
 
 #
-def process_frame_for_infer(frame, checkin:bool):
+def process_frame_for_infer(frame, checkin:bool=True):
     raw_image = frame
     raw_h, raw_w,_ = raw_image.shape
     raw_image  =cv2.resize(raw_image,(640, 640))
@@ -88,8 +92,10 @@ def process_frame_for_infer(frame, checkin:bool):
     except:
         text_name = "unknown"
 
+    #save check 
     if id_name != "-":
-        save_check_to_csv(id_name, checkin)
+        save_check_to_csv(id_name)
+        sumary_day()
 
     for b in list_face_b:
         text = "{} {}".format(text_name, id_name)

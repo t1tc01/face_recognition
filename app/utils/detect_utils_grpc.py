@@ -1,40 +1,15 @@
+import sys
 import numpy as np
 import cv2
-import tritonclient.http as httpclient
 import time
 import torch
 from itertools import product as product
 from math import ceil
 
+import tritonclient.grpc as grpcclient
+
+#Constant for application
 LONG_SIDE = 640
-
-class PriorBox(object):
-    def __init__(self, cfg, image_size=None, phase='train'):
-        super(PriorBox, self).__init__()
-        self.min_sizes = cfg['min_sizes']
-        self.steps = cfg['steps']
-        self.clip = cfg['clip']
-        self.image_size = image_size
-        self.feature_maps = [[ceil(self.image_size[0]/step), ceil(self.image_size[1]/step)] for step in self.steps]
-        self.name = "s"
-
-    def forward(self):
-        anchors = []
-        for k, f in enumerate(self.feature_maps):
-            min_sizes = self.min_sizes[k]
-            for i, j in product(range(f[0]), range(f[1])):
-                for min_size in min_sizes:
-                    s_kx = min_size / self.image_size[1]
-                    s_ky = min_size / self.image_size[0]
-                    dense_cx = [x * self.steps[k] / self.image_size[1] for x in [j + 0.5]]
-                    dense_cy = [y * self.steps[k] / self.image_size[0] for y in [i + 0.5]]
-                    for cy, cx in product(dense_cy, dense_cx):
-                        anchors += [cx, cy, s_kx, s_ky]
-        # back to torch land
-        output = torch.Tensor(anchors).view(-1, 4)
-        if self.clip:
-            output.clamp_(max=1, min=0)
-        return output.numpy()
 
 cfg_blaze = {
     'name': 'Blaze',
@@ -66,28 +41,50 @@ keep_top_k = 1000
 top_k = 2000
 vis_thres = 0.3
 
-client = httpclient.InferenceServerClient(url="localhost:8000")
+#Create grpc client
+try:
+    client = grpcclient.InferenceServerClient(
+        url="localhost:8001",
+        verbose=False,
+        ssl=False,
+        root_certificates=None,
+        private_key=None,
+        certificate_chain=None,
+    )
+except Exception as e:
+    print("channel creation failed: " + str(e))
+    sys.exit()
 
 #
-def decode_landm(pre, priors, variances):
-    landms = np.concatenate((priors[:, :2] + pre[:, :2] * variances[0] * priors[:, 2:],
-                        priors[:, :2] + pre[:, 2:4] * variances[0] * priors[:, 2:],
-                        priors[:, :2] + pre[:, 4:6] * variances[0] * priors[:, 2:],
-                        priors[:, :2] + pre[:, 6:8] * variances[0] * priors[:, 2:],
-                        priors[:, :2] + pre[:, 8:10] * variances[0] * priors[:, 2:],
-                        ), axis=1)
-    return landms
+class PriorBox(object):
+    def __init__(self, cfg, image_size=None, phase='train'):
+        super(PriorBox, self).__init__()
+        self.min_sizes = cfg['min_sizes']
+        self.steps = cfg['steps']
+        self.clip = cfg['clip']
+        self.image_size = image_size
+        self.feature_maps = [[ceil(self.image_size[0]/step), ceil(self.image_size[1]/step)] for step in self.steps]
+        self.name = "s"
 
-#
-def decode(loc, priors, variances):
-    boxes = np.concatenate((
-        priors[:, :2] + loc[:, :2] * variances[0] * priors[:, 2:],
-        priors[:, 2:] * np.exp(loc[:, 2:] * variances[1])), 1)
-    boxes[:, :2] -= boxes[:, 2:] / 2
-    boxes[:, 2:] += boxes[:, :2]
-    return boxes
+    def forward(self):
+        anchors = []
+        for k, f in enumerate(self.feature_maps):
+            min_sizes = self.min_sizes[k]
+            for i, j in product(range(f[0]), range(f[1])):
+                for min_size in min_sizes:
+                    s_kx = min_size / self.image_size[1]
+                    s_ky = min_size / self.image_size[0]
+                    dense_cx = [x * self.steps[k] / self.image_size[1] for x in [j + 0.5]]
+                    dense_cy = [y * self.steps[k] / self.image_size[0] for y in [i + 0.5]]
+                    for cy, cx in product(dense_cy, dense_cx):
+                        anchors += [cx, cy, s_kx, s_ky]
+        # back to torch land
+        output = torch.Tensor(anchors).view(-1, 4)
+        if self.clip:
+            output.clamp_(max=1, min=0)
+        return output.numpy()
 
-#
+#Preprocess
 def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True):
     # Resize image to a 32-pixel-multiple rectangle https://github.com/ultralytics/yolov3/issues/232
     shape = img.shape[:2]  # current shape [height, width]
@@ -120,6 +117,28 @@ def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scale
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
     return img, ratio, (dw, dh)
 
+
+#Post-process
+#
+def decode_landm(pre, priors, variances):
+    landms = np.concatenate((priors[:, :2] + pre[:, :2] * variances[0] * priors[:, 2:],
+                        priors[:, :2] + pre[:, 2:4] * variances[0] * priors[:, 2:],
+                        priors[:, :2] + pre[:, 4:6] * variances[0] * priors[:, 2:],
+                        priors[:, :2] + pre[:, 6:8] * variances[0] * priors[:, 2:],
+                        priors[:, :2] + pre[:, 8:10] * variances[0] * priors[:, 2:],
+                        ), axis=1)
+    return landms
+
+#
+def decode(loc, priors, variances):
+    boxes = np.concatenate((
+        priors[:, :2] + loc[:, :2] * variances[0] * priors[:, 2:],
+        priors[:, 2:] * np.exp(loc[:, 2:] * variances[1])), 1)
+    boxes[:, :2] -= boxes[:, 2:] / 2
+    boxes[:, 2:] += boxes[:, :2]
+    return boxes
+
+#
 def py_cpu_nms(dets, thresh):
     """Pure Python NMS baseline."""
     x1 = dets[:, 0]
@@ -150,6 +169,7 @@ def py_cpu_nms(dets, thresh):
 
     return keep
 
+#Pipeline
 #
 def detection_on_frame(raw_img):
     """
@@ -175,11 +195,11 @@ def detection_on_frame(raw_img):
     img -= (104, 117, 123)
     img = img.transpose(2, 0, 1)
     img = np.expand_dims(img, axis=0)
-    
-    detection_input = httpclient.InferInput( #Create input to triton server
+
+    detection_input = grpcclient.InferInput( #Create input to triton server
             "input", img.shape, datatype="FP32"
         )
-    detection_input.set_data_from_numpy(img, binary_data=True)
+    detection_input.set_data_from_numpy(img)
 
     # Query the server
     detection_response = client.infer(
@@ -242,15 +262,3 @@ def crop_face(img_raw, list_face_b):
         list_face.append(crop_img)
     return list_face
 
-if __name__ == "__main__":
-    path_img = "img/Screenshot from 2023-06-28 13-56-03.png"
-    raw_img = cv2.imread(path_img)
-    raw_h, raw_w,_ = raw_img.shape
-    raw_img  =cv2.resize(raw_img,(640, 640))
-    list_face_b = detection_on_frame(raw_img)
-    list_face = crop_face(raw_img, list_face_b)
-    for i in range(len(list_face)):
-        text = "face " + str(i)
-        cv2.imshow(text, cv2.resize(list_face[i], (112,112)))
-        cv2.waitKey(0)
-    cv2.destroyAllWindows()

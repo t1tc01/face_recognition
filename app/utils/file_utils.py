@@ -32,7 +32,6 @@ def summary_day():
             csv_reader = csv.DictReader(csv_file, fieldnames=fieldnames)
             data_checkin = [row for row in csv_reader] #list dicts
             
-
     if os.path.exists(checkout_filepath):
         fieldnames = ['ID', 'Time check out']
         with open(checkout_filepath, "r") as csv_file:

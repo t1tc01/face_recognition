@@ -9,20 +9,16 @@ import cv2
 import tritonclient.http as httpclient
 import time
 
-from utils.detect_utils import *
-from utils.recog_untils import *
+# from utils.recog_untils import *
+#from utils.detect_utils import *
+
+from utils.detect_utils_grpc import *
+from utils.recog_utils_grpc import *
 from utils.infer_utils import *
 from utils.file_utils import * 
 
 
 if __name__ == "__main__":
-
-    isCheckin = True
-
-    print("Bạn muốn checkin hay checkout (0-check in/1-check out)")
-    text = input().strip()
-    if text == "1":
-        isCheckin = False
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -35,7 +31,7 @@ if __name__ == "__main__":
             print("Can't read from camera!")
             break
         raw_image = frame
-        raw_image = process_frame_for_infer(raw_image, isCheckin)
+        raw_image = process_frame_for_infer(raw_image)
         cv2.imshow("Camera", raw_image)
         if cv2.waitKey(1) == ord('q'):
             break

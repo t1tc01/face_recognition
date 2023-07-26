@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import os
 
-from utils.detect_utils import *
+from utils.detect_utils_grpc import *
 
 PATH_TARGET  = "/media/hoangphan/Data/code/acs/face_recog/save/target"
 PATH_CLASS = "/media/hoangphan/Data/code/acs/face_recog/save/class.txt"

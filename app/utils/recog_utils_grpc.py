@@ -1,11 +1,25 @@
-import tritonclient.http as httpclient
+import argparse
+import sys
+
+import os
 import cv2
 import numpy as np
-import os
+import tritonclient.grpc as grpcclient
 from numpy.linalg import norm
 
+try:
+    client = grpcclient.InferenceServerClient(
+        url="localhost:8001",
+        verbose=False,
+        ssl=False,
+        root_certificates=None,
+        private_key=None,
+        certificate_chain=None,
+    )
+except Exception as e:
+    print("channel creation failed: " + str(e))
+    sys.exit()
 
-client = httpclient.InferenceServerClient(url="localhost:8000")
 threshold = 0.98
 
 #Prerocess image after crop
@@ -35,11 +49,11 @@ def inference_on_image(image):
         raise e
     image = np.expand_dims(image, axis=0)
 
-    recognition_input = httpclient.InferInput( #create input 
+    recognition_input = grpcclient.InferInput( #create input 
         "input", image.shape, datatype="FP32"
     )
 
-    recognition_input.set_data_from_numpy(image, binary_data=True)
+    recognition_input.set_data_from_numpy(image)
 
     recognition_response = client.infer(
         model_name="mobilefacenet", inputs=[recognition_input]
@@ -62,7 +76,7 @@ def create_feat_list(list_person_id, path_to_target):
         feat_list.append(feat)
     return feat_list
 
-#Inference
+#
 def iden(feat_img,feat_list):
     scores = []
     for i in range(len(feat_list)):

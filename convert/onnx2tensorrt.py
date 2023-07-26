@@ -189,34 +189,27 @@ def trt_inference(engine, context, data):
 def main():
     args = parse_args()
 
-    # # Sample images (folder)
-    # print(args.sample_folder_path)
-    # img_resize = load_image_folder(args.sample_folder_path, args.img_size, args.batch_size).astype(np.float32)
-    # '''
-    # # Sample (one image)
-    # print(args.sample_image_path)
-    # img_resize, img_raw = load_image(args.sample_image_path, args.img_size)
-    # '''
-            
-    #print('inference image size:', img_resize.shape)
-
-    # Build TensorRT engine
-    build_engine(args.onnx_model_path, args.tensorrt_engine_path, args.engine_precision, args.dynamic_axes, \
-    	args.img_size, args.batch_size, args.min_engine_batch_size, args.opt_engine_batch_size, args.max_engine_batch_size)
-
-    # # Read the engine from the file and deserialize
-    # with open(args.tensorrt_engine_path, "rb") as f, trt.Runtime(TRT_LOGGER) as runtime: 
-    #     engine = runtime.deserialize_cuda_engine(f.read())    
-    # context = engine.create_execution_context()
+    img = cv2.imread("../img/112x112.jpg")
 
 
-    # # TensorRT inference
-    # context.set_binding_shape(0, (args.batch_size, args.img_size[0], args.img_size[1], args.img_size[2]))
+    # Build TensorRT engine, uncoment to build_engine
+    # build_engine(args.onnx_model_path, args.tensorrt_engine_path, args.engine_precision, args.dynamic_axes, \
+    # 	args.img_size, args.batch_size, args.min_engine_batch_size, args.opt_engine_batch_size, args.max_engine_batch_size)
+
+    # Read the engine from the file and deserialize
+    with open(args.tensorrt_engine_path, "rb") as f, trt.Runtime(TRT_LOGGER) as runtime: 
+        engine = runtime.deserialize_cuda_engine(f.read())    
+    context = engine.create_execution_context()
+
+
+    # TensorRT inference
+    context.set_binding_shape(0, (args.batch_size, args.img_size[0], args.img_size[1], args.img_size[2]))
     
-    # trt_start_time = time.time()
-    # trt_outputs = trt_inference(engine, context, img_resize)
-    # trt_outputs = np.array(trt_outputs[1]).reshape(args.batch_size, -1)
-    # trt_end_time = time.time()
+    trt_start_time = time.time()
+    trt_outputs = trt_inference(engine, context, img)
+    trt_outputs = np.array(trt_outputs[1]).reshape(args.batch_size, -1)
+    trt_end_time = time.time()
+    
 
 if __name__ == "__main__":
     main()
