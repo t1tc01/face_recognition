@@ -7,6 +7,9 @@ from tkinter import messagebox
 
 from utils.infer_utils import *
 
+PATH_TO_TARGET  = "/media/hoangphan/Data/code/acs/face_recog/save/target"
+list_cls, list_person_img = get_list_class()
+
 #
 def open_camera_window(window, id, name_face):
     camera_window = tk.Toplevel(window)
@@ -15,6 +18,10 @@ def open_camera_window(window, id, name_face):
     def close_camera_window():
         camera.release()
         camera_window.destroy()
+        list_cls, list_person_img = get_list_class()
+        create_feat_list_file(list_cls,PATH_TO_TARGET)
+        messagebox.showinfo(title="Chú ý", message="Saved to feature store")
+        reload_feat_list()
 
     def show_frame():
         ret, frame = camera.read()
@@ -29,15 +36,16 @@ def open_camera_window(window, id, name_face):
 
     video_label = tk.Label(camera_window)
     video_label.pack()
+
     show_frame()
 
-    close_camera_window()
-    camera_window.after(2000, camera_window.destroy)
+    camera_window.after(2000, close_camera_window)
 
 #
 def on_add_person(window, id, name):
     messagebox.showinfo(title="Chú ý", message="Nhìn thẳng vào camera!")
     open_camera_window(window, id, name)
+   
 
 #
 def open_submit_window(window):

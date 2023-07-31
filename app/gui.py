@@ -3,11 +3,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import messagebox
 
-from utils.detect_utils_grpc import *
-from utils.recog_utils_grpc import *
-from utils.infer_utils import *
 from utils.file_utils import *
-from utils.detect_utils_grpc import *
 
 from add_class_window import open_submit_window
 from check_in_window import on_open_check_in

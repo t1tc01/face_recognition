@@ -47,7 +47,16 @@ def get_list_class(path_to_class=PATH_TO_CLASS):
 list_cls, list_person_img = get_list_class(PATH_TO_CLASS)
 
 #feat_list is feature of 
-feat_lis = create_feat_list(list_cls,PATH_TO_TARGET)
+# feat_lis = create_feat_list(list_cls,PATH_TO_TARGET)
+
+create_feat_list_file(list_cls,PATH_TO_TARGET)
+feat_list =load_feat_list_file()
+print(len(feat_list))
+
+def reload_feat_list():
+    global feat_list
+    feat_list =load_feat_list_file()
+    print("number of class:", len(feat_list))
 
 #
 def process_frame_for_get_data(frame, checkIn=True):
@@ -72,6 +81,8 @@ def process_frame_for_get_data(frame, checkIn=True):
         cv2.circle(raw_image, (b[13], b[14]), 1, (255, 0, 0), 4)
 
     raw_image = cv2.resize(raw_image,(raw_w, raw_h))
+
+    create_feat_list_file()
     return raw_image, list_face
 
 #
@@ -118,7 +129,7 @@ def process_frame_for_infer(frame, checkIn=True):
     try:
         for face in list_face: 
             face_feat = inference_on_image(face)
-            index, score = iden(face_feat, feat_lis)
+            index, score = iden(face_feat, feat_list)
             if index == -1:
                 text_name = "unknown"
             else:
@@ -170,7 +181,7 @@ def process_frame(frame):
     try:
         for face in list_face: 
             face_feat = inference_on_image(face)
-            index, score = iden(face_feat, feat_lis)
+            index, score = iden(face_feat, feat_list)
             if index == -1:
                 text_name = "unknown"
             else:

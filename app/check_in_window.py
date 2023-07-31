@@ -12,6 +12,8 @@ from utils.file_utils import *
 from utils.detect_utils_grpc import *
 
 
+
+
 #
 def open_camera_window(window):
     camera_window = tk.Toplevel(window)

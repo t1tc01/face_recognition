@@ -6,6 +6,10 @@ import cv2
 import numpy as np
 import tritonclient.grpc as grpcclient
 from numpy.linalg import norm
+import json
+
+
+PATH_TO_FEATLIST = os.path.abspath('save/feat_list.json')
 
 try:
     client = grpcclient.InferenceServerClient(
@@ -75,6 +79,30 @@ def create_feat_list(list_person_id, path_to_target):
         feat = inference_on_image(target)
         feat_list.append(feat)
     return feat_list
+
+def create_feat_list_file(list_person_id, path_to_target):
+    feat_list = []
+    for i in range(len(list_person_id)):
+        path_person = os.path.join(path_to_target, list_person_id[i])
+        target_name = os.listdir(path_person)[0]
+        path_target = os.path.join(path_person,target_name)
+        target = cv2.imread(path_target)
+        feat = inference_on_image(target)
+        feat = feat.tolist()
+        feat_list.append(feat)
+    with open(PATH_TO_FEATLIST, 'w') as f:
+        json.dump(feat_list, f)
+
+def load_feat_list_file(path=PATH_TO_FEATLIST):
+    feat_list = []
+
+    with open(PATH_TO_FEATLIST, 'r') as f:
+        feat_list = json.load(f)
+    for i in range(len(feat_list)):
+        feat_list[i] = np.array(feat_list[i])
+    print("Load feature done!")
+    return feat_list
+    
 
 #
 def iden(feat_img,feat_list):
