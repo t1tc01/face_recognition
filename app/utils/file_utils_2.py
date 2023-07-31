@@ -13,8 +13,6 @@ from datetime import datetime
 PATH_TO_SAVE = "/media/hoangphan/Data/code/acs/face_recog/save"
 PATH_TO_CLASS = "/media/hoangphan/Data/code/acs/face_recog/save/class.txt"
 
-
-
 def get_list_class(path_to_class=PATH_TO_CLASS):
     list_person_img = []
     list_cls = []

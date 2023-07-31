@@ -5,9 +5,9 @@ import time
 from router.camera_multi import Camera
 from utils.recog_utils_grpc import *
 from utils.detect_utils_grpc import *
-from utils.file_utils_2 import *
+#from utils.file_utils_2 import *
 
-#from utils.file_utils import *
+from utils.file_utils import *
 # from utils.detect_utils import *
 # from utils.recog_untils import *
 
@@ -15,6 +15,21 @@ from utils.file_utils_2 import *
 #
 PATH_TO_TARGET  = "/media/hoangphan/Data/code/acs/face_recog/save/target"
 PATH_TO_CLASS = "/media/hoangphan/Data/code/acs/face_recog/save/class.txt"
+
+#
+def create_new_class(id: str, name: str):
+    with open(PATH_TO_CLASS, "r") as file:
+        content = file.read()
+        if id in content:
+            print(content)
+            print("ID đã tồn tại!")
+            return -1
+    with open(PATH_TO_CLASS, "a") as file:
+        text = id + " " + name
+        file.write(text + "\n")
+        os.mkdir(os.path.join(PATH_TO_TARGET,str(id)))
+        print("Đã khởi tạo: ", id, name)
+        return id
 
 #
 def get_list_class(path_to_class=PATH_TO_CLASS):
@@ -35,7 +50,7 @@ list_cls, list_person_img = get_list_class(PATH_TO_CLASS)
 feat_lis = create_feat_list(list_cls,PATH_TO_TARGET)
 
 #
-def process_frame_for_get_data(frame):
+def process_frame_for_get_data(frame, checkIn=True):
     raw_image = frame
     raw_h, raw_w,_ = raw_image.shape
     raw_image  =cv2.resize(raw_image,(640, 640))
@@ -59,18 +74,38 @@ def process_frame_for_get_data(frame):
     raw_image = cv2.resize(raw_image,(raw_w, raw_h))
     return raw_image, list_face
 
-#Save list face
-def save_list_face(list_face):
+#
+def process_frame_to_crop(frame, id: str, name_face: str):
+    raw_image = frame
+    raw_h, raw_w,_ = raw_image.shape
+    raw_image  =cv2.resize(raw_image,(640, 640))
+    list_face_b = detection_on_frame(raw_image)
+    list_face = crop_face(raw_image, list_face_b)
+
     for i in range(len(list_face)):
         face = cv2.resize(list_face[i], (112,112))
         name_face = str(id) + "_" + str(time.time()) + ".jpg"
-        print(os.path.join(PATH_TO_TARGET, str(id),name_face))
-        cv2.imwrite(os.path.join(PATH_TO_TARGET, str(id),name_face),face)
-        print("Đã lưu ",name_face)
+        cv2.imwrite(os.path.join(PATH_TO_TARGET,str(id),name_face),face)
+        print("Đã lưu ",name_face,"to", os.path.join(PATH_TO_TARGET,str(id)))
 
+    for b in list_face_b:
+        b = list(map(int, b))
+        cv2.rectangle(raw_image, (b[0], b[1]), (b[2], b[3]), (0, 0, 255), 2)
+        cx = b[0]
+        cy = b[1] + 12
+
+        # landms
+        cv2.circle(raw_image, (b[5], b[6]), 1, (0, 0, 255), 4)
+        cv2.circle(raw_image, (b[7], b[8]), 1, (0, 255, 255), 4)
+        cv2.circle(raw_image, (b[9], b[10]), 1, (255, 0, 255), 4)
+        cv2.circle(raw_image, (b[11], b[12]), 1, (0, 255, 0), 4)
+        cv2.circle(raw_image, (b[13], b[14]), 1, (255, 0, 0), 4)
+
+    raw_image = cv2.resize(raw_image,(raw_w, raw_h))
+    return raw_image
 
 #
-def process_frame_for_infer(frame, checkin:bool=True):
+def process_frame_for_infer(frame, checkIn=True):
     raw_image = frame
     raw_h, raw_w,_ = raw_image.shape
     raw_image  =cv2.resize(raw_image,(640, 640))
@@ -94,8 +129,8 @@ def process_frame_for_infer(frame, checkin:bool=True):
 
     #save check 
     if id_name != "-":
-        save_check_to_csv(id_name)
-        sumary_day()
+        save_check_to_csv(id_name, checkIn)
+        # sumary_day()
 
     for b in list_face_b:
         text = "{} {}".format(text_name, id_name)

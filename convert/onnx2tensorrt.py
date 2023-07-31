@@ -63,7 +63,7 @@ def parse_args():
     parser.add_argument('--dynamic_axes', help='dynamic batch input or output',
         default='True')
     parser.add_argument('--engine_precision', help='precision of TensorRT engine', choices=['FP32', 'FP16'], 
-    	default='FP16')
+    	default='FP32')
     parser.add_argument('--min_engine_batch_size', type=int, help='set the min input data size of model for inference', 
     	default=1)
     parser.add_argument('--opt_engine_batch_size', type=int, help='set the most used input data size of model for inference', 
@@ -186,30 +186,47 @@ def trt_inference(engine, context, data):
         cuda.cuMemFree(b)  
     return bufferH
 
+def to_numpy(tensor):
+    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+
 def main():
     args = parse_args()
 
-    img = cv2.imread("../img/112x112.jpg")
+    x = torch.randn(1, 3, 112, 112, requires_grad=True)
+    x_fp16 = x.to(torch.float16)
 
-
-    # Build TensorRT engine, uncoment to build_engine
-    # build_engine(args.onnx_model_path, args.tensorrt_engine_path, args.engine_precision, args.dynamic_axes, \
-    # 	args.img_size, args.batch_size, args.min_engine_batch_size, args.opt_engine_batch_size, args.max_engine_batch_size)
+    #Build TensorRT engine, uncoment to build_engine
+    build_engine(args.onnx_model_path, args.tensorrt_engine_path, args.engine_precision, args.dynamic_axes, \
+    	args.img_size, args.batch_size, args.min_engine_batch_size, args.opt_engine_batch_size, args.max_engine_batch_size)
 
     # Read the engine from the file and deserialize
     with open(args.tensorrt_engine_path, "rb") as f, trt.Runtime(TRT_LOGGER) as runtime: 
         engine = runtime.deserialize_cuda_engine(f.read())    
     context = engine.create_execution_context()
 
-
     # TensorRT inference
     context.set_binding_shape(0, (args.batch_size, args.img_size[0], args.img_size[1], args.img_size[2]))
     
     trt_start_time = time.time()
-    trt_outputs = trt_inference(engine, context, img)
+    trt_outputs = trt_inference(engine, context, to_numpy(x))
     trt_outputs = np.array(trt_outputs[1]).reshape(args.batch_size, -1)
     trt_end_time = time.time()
-    
+    print('Time:',abs(trt_start_time - trt_end_time))
+
+    #Onnx inferrence
+    onnx_model = onnx.load(args.onnx_model_path)
+    onnx.checker.check_model(onnx_model)
+
+    onnx_start_time = time.time()
+    sess = rt.InferenceSession(args.onnx_model_path)
+    ort_inputs = {sess.get_inputs()[0].name: to_numpy(x)}
+    ort_outs = sess.run(None, ort_inputs)
+    onnx_end_time = time.time()
+    print('Time:',abs(onnx_start_time- onnx_end_time))
+
+    np.testing.assert_allclose(trt_outputs, ort_outs[0], rtol=1e-03, atol=1e-05)
+    print("Exported model has been tested with ONNXRuntime, and the result looks good!")
+
 
 if __name__ == "__main__":
     main()

@@ -5,12 +5,29 @@ import pandas as pd
 from datetime import datetime
 
 PATH_TO_SAVE = "/media/hoangphan/Data/code/acs/face_recog/save"
-PATH_TO_CLASS = ""
+PATH_TO_CLASS = "/media/hoangphan/Data/code/acs/face_recog/save/class.txt"
 
-def summary_day():
+def get_list_class(path_to_class=PATH_TO_CLASS):
+    list_person_img = []
+    list_cls = []
+    with open(path_to_class, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        for line in lines:
+            cl,  label= line.strip().split(" ",maxsplit=1)
+            list_person_img.append(label)
+            list_cls.append(cl)
+    return list_cls, list_person_img
+
+#list_class is ID, list_person_img is name of person
+list_cls, list_person = get_list_class(PATH_TO_CLASS)
+
+def sumary_day():
     """
         Get first time check in and check out of each id and summary to csv file (summary file of the day)
     """
+    now = datetime.now()
+    formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
+
     local_time = time.localtime()
     current_day = local_time.tm_mday
     current_month = local_time.tm_mon
@@ -21,10 +38,13 @@ def summary_day():
                              str(current_day) + str(current_month) + str(current_year))    
     checkin_filepath = os.path.join(day_path, "check_in", "checkin.csv")
     checkout_filepath = os.path.join(day_path, "check_out", "checkout.csv")
+    sumary_path = os.path.join(day_path, "summary.csv")
 
     data_checkin = []
     data_checkout = []
     data_sumary = []
+
+    
 
     if os.path.exists(checkin_filepath):
         fieldnames = ['ID', 'Time check in']
@@ -37,12 +57,31 @@ def summary_day():
         with open(checkout_filepath, "r") as csv_file:
             csv_reader = csv.DictReader(csv_file, fieldnames=fieldnames)
             data_checkout = [row for row in csv_reader]
-
+    
     for i in range(len(data_checkin)):
         for j in range(len(data_checkout)):
             if data_checkin[i]["ID"] == data_checkout[j]["ID"]:
-                sumary = {"ID":data_checkin[i]["ID"], "Time check in":  data_checkin[i]["Time check in"], "Time check out" : data_checkout[j]["Time check out"]}
+
+                #From id, get classname
+                idx = -1
+                class_name = "unknown"
+                for k in range(len(list_cls)):
+                    if list_cls[k] == data_checkin[i]["ID"]:
+                        idx = k
+                class_name = list_person[idx]
+
+                #
+                sumary = {"ID":data_checkin[i]["ID"], "Name": class_name ,"Time check in":  data_checkin[i]["Time check in"], "Time check out" : data_checkout[j]["Time check out"]}
                 data_sumary.append(sumary)
+
+    fieldnames = ["ID", "Name" ,"Time check in", "Time check out"]
+    with open(sumary_path, "w", newline='') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        for data in data_sumary:
+            writer.writerow(data)
+    csv_file.close()    
+
+    print("Đã tổng hợp ngày", formatted_now)
     return data_sumary
             
 
@@ -125,6 +164,7 @@ def save_check_to_csv(id: str, checkin=True):
         csv_file.close()
 
 if __name__ == "__main__":
-    summary_day()
+   data = sumary_day()
+   print(data)
 
     
