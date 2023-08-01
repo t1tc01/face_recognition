@@ -70,6 +70,7 @@ def iden(feat_img,feat_list):
         scores.append(cosine)
     
     max_indices = np.argmax(np.array(scores))
+    print(scores)
     if scores[max_indices] > threshold:
         return max_indices, scores[max_indices]
     return -1, scores[max_indices]

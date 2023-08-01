@@ -24,7 +24,7 @@ except Exception as e:
     print("channel creation failed: " + str(e))
     sys.exit()
 
-threshold = 0.98
+threshold = 0.95
 
 #Prerocess image after crop
 def recog_preprocess(image, mean=127.5, std=0.0078125):
@@ -112,6 +112,7 @@ def iden(feat_img,feat_list):
         scores.append(cosine)
     
     max_indices = np.argmax(np.array(scores))
+    print(scores)
     if scores[max_indices] > threshold:
         return max_indices, scores[max_indices]
     return -1, scores[max_indices]

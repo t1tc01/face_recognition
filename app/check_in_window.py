@@ -11,9 +11,6 @@ from utils.infer_utils import *
 from utils.file_utils import *
 from utils.detect_utils_grpc import *
 
-
-
-
 #
 def open_camera_window(window):
     camera_window = tk.Toplevel(window)
@@ -43,6 +40,6 @@ def open_camera_window(window):
 
 #
 def on_open_check_in(window):
-    messagebox.showinfo(title="Thông báo", message="Mở chế độ check-in!")
+    messagebox.showinfo(title="Attention", message="Check-in mode opened!")
     open_camera_window(window)
 

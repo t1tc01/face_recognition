@@ -44,6 +44,7 @@ def get_list_class(path_to_class=PATH_TO_CLASS):
     return list_cls, list_person_img
 
 #list_class is ID, list_person_img is name of person
+
 list_cls, list_person_img = get_list_class(PATH_TO_CLASS)
 
 #feat_list is feature of 
@@ -55,7 +56,9 @@ print(len(feat_list))
 
 def reload_feat_list():
     global feat_list
+    global list_cls, list_person_img
     feat_list =load_feat_list_file()
+    list_cls, list_person_img = get_list_class(PATH_TO_CLASS)
     print("number of class:", len(feat_list))
 
 #
@@ -137,6 +140,7 @@ def process_frame_for_infer(frame, checkIn=True):
                 id_name = list_cls[index]
     except:
         text_name = "unknown"
+        print("except!")
 
     #save check 
     if id_name != "-":
@@ -188,6 +192,7 @@ def process_frame(frame):
                 text_name = list_person_img[index]
     except:
         text_name = "unknown"
+
 
     result_data.update({"text_name": text_name, "score":str(score)})
     for b in list_face_b:

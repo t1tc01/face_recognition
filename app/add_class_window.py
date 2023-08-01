@@ -20,7 +20,7 @@ def open_camera_window(window, id, name_face):
         camera_window.destroy()
         list_cls, list_person_img = get_list_class()
         create_feat_list_file(list_cls,PATH_TO_TARGET)
-        messagebox.showinfo(title="Chú ý", message="Saved to feature store")
+        messagebox.showinfo(title="Attention", message="Saved to feature store")
         reload_feat_list()
 
     def show_frame():
@@ -43,7 +43,7 @@ def open_camera_window(window, id, name_face):
 
 #
 def on_add_person(window, id, name):
-    messagebox.showinfo(title="Chú ý", message="Nhìn thẳng vào camera!")
+    messagebox.showinfo(title="Attention", message="look straight at the camera!")
     open_camera_window(window, id, name)
    
 
@@ -59,8 +59,8 @@ def open_submit_window(window):
         print("Username:", username)
         # Thực hiện xử lý dữ liệu nhập
 
-        create_new_class(user_id, username)
         on_add_person(window, user_id, username)
+        create_new_class(user_id, username)
 
         new_window.destroy()
     

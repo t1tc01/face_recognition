@@ -40,6 +40,6 @@ def open_camera_window(window):
 
 #
 def on_open_check_out(window):
-    messagebox.showinfo(title="Thông báo", message="Mở chế độ checkout!")
+    messagebox.showinfo(title="Attention", message="Checkout mode opened!")
     open_camera_window(window)
 
