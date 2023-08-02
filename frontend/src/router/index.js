@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import FaceRecognitionView from '@/views/FaceRecognitionView'
+import AboutView from '@/views/AboutView'
+import AddPersonView from '@/views/AddPersonView'
+import OpenCamCheckin from '../components/camera/OpenCamCheckin'
+import OpenCamCheckout from '../components/camera/OpenCamCheckout'
 
 const routes = [
   {
@@ -10,16 +15,35 @@ const routes = [
   {
     path: '/about',
     name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+    component: AboutView
+  },
+  {
+    path: '/face-recognition',
+    name: 'face-recognition',
+    component: FaceRecognitionView
+  },
+  {
+    path: '/add-person',
+    name: 'add-person',
+    component: AddPersonView
+  },
+  {
+    path:'/check-in-camera',
+    name:'check-in-camera',
+    component: OpenCamCheckin
+  },
+  {
+    path:'/check-out-camera',
+    name:'check-out-camera',
+    component: OpenCamCheckout
   }
 ]
+
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
+
 
 export default router

@@ -22,47 +22,27 @@ class Item(BaseModel):
 
 app = FastAPI()
 
-templates = Jinja2Templates(directory="templates")
-
-"""
-Open camera 
-"""
-@app.get("/",response_class=HTMLResponse)
-async def index(request: Request):
-   return templates.TemplateResponse('index.html', {"request": request})
-
+#Open camera for checkin
 @app.get("/streaming_checkin")
 async def streaming_checkin():
     return  StreamingResponse(gen_camera_for_infer(Camera(), True),
                     media_type='multipart/x-mixed-replace; boundary=frame')
 
+#Open camera for checkout
 @app.get("/streaming_checkout")
 async def streaming_checkout():
     return  StreamingResponse(gen_camera_for_infer(Camera(), False),
                     media_type='multipart/x-mixed-replace; boundary=frame')
 
 
-"""
-Get data 
-"""
-@app.get("/get_data", response_class=HTMLResponse)
-async def get_data(request: Request):
-    return templates.TemplateResponse('getdata.html', {"request": request})
-
+#Open camera for getdata
 @app.get("/streaming_data")
 async def streaming_data():
     return  StreamingResponse(gen_camera_for_add_class(Camera()),
                 media_type='multipart/x-mixed-replace; boundary=frame')
 
 
-"""
-Open client's camera 
-"""
-#Video streaming from a camera that is connectêd with server
-@app.get('/client_stream', response_class=HTMLResponse) 
-async def client_stream(request: Request):
-   return templates.TemplateResponse('client_stream.html', {"request": request})
-
+#Client stream
 @app.post("/client_stream")
 async def image_data(request: Request):
     content_type = request.headers.get('Content-Type')

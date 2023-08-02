@@ -134,7 +134,7 @@ def save_check_to_csv(id: str, checkin=True):
 
         for row in data_csv: #check isChekin or not
             if row["ID"] == data["ID"]:
-                print("ID", id ,"đã check in rồi!")
+                # print("ID", id ,"đã check in rồi!")
                 return
             
         with open(ckin_session_path, "a", newline='') as csv_file: #if have checkin yet, check in
@@ -155,7 +155,7 @@ def save_check_to_csv(id: str, checkin=True):
 
         for row in data_csv: #check isChekin or not
             if row["ID"] == data["ID"]:
-                print("ID", id ,"đã check out rồi!")
+                # print("ID", id ,"đã check out rồi!")
                 return
             
         with open(ckout_session_path, "a", newline='') as csv_file: #if have checkin yet, check in

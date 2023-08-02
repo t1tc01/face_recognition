@@ -9,7 +9,7 @@ from numpy.linalg import norm
 import json
 
 
-PATH_TO_FEATLIST = os.path.abspath('save/feat_list.json')
+PATH_TO_FEATLIST = os.path.abspath('../save/feat_list.json')
 
 try:
     client = grpcclient.InferenceServerClient(
@@ -24,7 +24,7 @@ except Exception as e:
     print("channel creation failed: " + str(e))
     sys.exit()
 
-threshold = 0.95
+threshold = 0.97
 
 #Prerocess image after crop
 def recog_preprocess(image, mean=127.5, std=0.0078125):

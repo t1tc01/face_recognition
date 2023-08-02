@@ -116,6 +116,7 @@ def process_frame_to_crop(frame, id: str, name_face: str):
         cv2.circle(raw_image, (b[13], b[14]), 1, (255, 0, 0), 4)
 
     raw_image = cv2.resize(raw_image,(raw_w, raw_h))
+    create_feat_list_file()
     return raw_image
 
 #
@@ -138,6 +139,7 @@ def process_frame_for_infer(frame, checkIn=True):
             else:
                 text_name = list_person_img[index]
                 id_name = list_cls[index]
+                print(id_name, text_name)
     except:
         text_name = "unknown"
         print("except!")
@@ -226,10 +228,10 @@ def gen_camera_for_infer(camera, checkin: bool):
                b'Content-Type: image/jpeg\r\n\r\n' + byte_frame + b'\r\n')
 
 #
-def gen_camera_for_add_class(camera):
+def gen_camera_for_add_class(camera, id, name):
     while True:
         frame = camera.get_frame()
-        frame, list_face = process_frame_for_get_data(frame)
+        frame, list_face = process_frame_to_crop(frame, id, name)
         byte_frame = cv2.imencode('.jpg', frame)[1].tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + byte_frame + b'\r\n')
