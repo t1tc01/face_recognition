@@ -37,12 +37,10 @@
           <template #title>
             <span>
               <user-outlined />
-              <span>Thành viên</span>
+              <span>Theo dõi</span>
             </span>
           </template>
-          <a-menu-item key="3">Tom</a-menu-item>
-          <a-menu-item key="4">Bill</a-menu-item>
-          <a-menu-item key="5">Alex</a-menu-item>
+          <a-menu-item key="3">Tổng hợp dữ liệu</a-menu-item>
         </a-sub-menu>
         <a-menu-item key="9">
           <file-outlined />

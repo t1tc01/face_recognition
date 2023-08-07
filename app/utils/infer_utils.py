@@ -44,11 +44,7 @@ def get_list_class(path_to_class=PATH_TO_CLASS):
     return list_cls, list_person_img
 
 #list_class is ID, list_person_img is name of person
-
 list_cls, list_person_img = get_list_class(PATH_TO_CLASS)
-
-#feat_list is feature of 
-# feat_lis = create_feat_list(list_cls,PATH_TO_TARGET)
 
 create_feat_list_file(list_cls,PATH_TO_TARGET)
 feat_list =load_feat_list_file()
@@ -85,7 +81,7 @@ def process_frame_for_get_data(frame, checkIn=True):
 
     raw_image = cv2.resize(raw_image,(raw_w, raw_h))
 
-    create_feat_list_file()
+    # create_feat_list_file(list_cls,PATH_TO_TARGET)
     return raw_image, list_face
 
 #
@@ -116,7 +112,10 @@ def process_frame_to_crop(frame, id: str, name_face: str):
         cv2.circle(raw_image, (b[13], b[14]), 1, (255, 0, 0), 4)
 
     raw_image = cv2.resize(raw_image,(raw_w, raw_h))
-    create_feat_list_file()
+
+    #Update feat_list
+    create_feat_list_file(list_cls,PATH_TO_TARGET)
+
     return raw_image
 
 #
@@ -228,10 +227,10 @@ def gen_camera_for_infer(camera, checkin: bool):
                b'Content-Type: image/jpeg\r\n\r\n' + byte_frame + b'\r\n')
 
 #
-def gen_camera_for_add_class(camera, id, name):
+def gen_camera_for_add_class(camera, id: str, name: str):
     while True:
         frame = camera.get_frame()
-        frame, list_face = process_frame_to_crop(frame, id, name)
+        frame = process_frame_to_crop(frame, id, name)
         byte_frame = cv2.imencode('.jpg', frame)[1].tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + byte_frame + b'\r\n')

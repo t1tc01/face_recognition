@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request, Response, Header
 from fastapi.responses import StreamingResponse, HTMLResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+
 from pathlib import Path
 import cv2
 import uvicorn
@@ -16,11 +18,26 @@ import csv
 from utils.file_utils import *
 from utils.infer_utils import *
 
+origins = ["http://localhost:8080"]
+
+
+
 #pydantic to take data
-class Item(BaseModel):
-    eth_addr: str
+class Person(BaseModel):
+    id: str
+    name: str
+    add_time: str
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 #Open camera for checkin
 @app.get("/streaming_checkin")
@@ -38,9 +55,12 @@ async def streaming_checkout():
 #Open camera for getdata
 @app.get("/streaming_data")
 async def streaming_data():
-    return  StreamingResponse(gen_camera_for_add_class(Camera()),
+    return  StreamingResponse(gen_camera_for_add_class(Camera(), 'id', 'name'),
                 media_type='multipart/x-mixed-replace; boundary=frame')
 
+@app.post("/send_info-person")
+async def send_info(person: Person):
+    return person
 
 #Client stream
 @app.post("/client_stream")

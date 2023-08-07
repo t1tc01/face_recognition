@@ -2,28 +2,53 @@
     <div>
         <form action="">
             <label for="">Tên người mới</label>
-            <input type="text" required> 
+            <input type="text" required v-model="name"> 
     
             <label for="">ID</label>
-            <input type="text" required>
+            <input type="text" required v-model="id">
         </form>
-        <a-button type="primary" ghost @click="addPerson">Đăng ký</a-button>
+        <a-button type="primary" ghost @click="addPerson(id, name)">Đăng ký</a-button>
+        <router-view></router-view>
+
     </div>
 </template>
 
 <script>
+
+import router from '@/router'
+import {ref} from 'vue'
+
 export default {
-    data() {
-        return {
-            id: '',
-            name: '',
+    setup() {
+        let id = ref('')
+        let name = ref('')
+
+        function addPerson(id, name) {
+            const axios = require('axios')
+            const now = new Date();
+
+            if (id === '' && name === '') {
+                console.log('Invalid name and id')
+            } else {
+                console.log("ID:" + id + " Name: " + name + " Time: " + now.toLocaleString())
+
+                axios.post('http://localhost:8008/send_info-person', {
+                    id: id,
+                    name: name,
+                    add_time: now.toLocaleString()
+                })
+                .then(function (response) {
+                    console.log(response.data);
+                    router.push('/add-person-camera')
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            }
         }
+
+        return {id, name, addPerson}
     },
-    methods: {
-        addPerson() {
-            console.log('Add Person')
-        }
-    }
 }
 </script>
 

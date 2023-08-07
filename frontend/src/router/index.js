@@ -5,6 +5,7 @@ import AboutView from '@/views/AboutView'
 import AddPersonView from '@/views/AddPersonView'
 import OpenCamCheckin from '../components/camera/OpenCamCheckin'
 import OpenCamCheckout from '../components/camera/OpenCamCheckout'
+import OpenCamAddPerson from '../components/camera/OpenCamAddPerson'
 
 const routes = [
   {
@@ -36,6 +37,11 @@ const routes = [
     path:'/check-out-camera',
     name:'check-out-camera',
     component: OpenCamCheckout
+  },
+  {
+    path: '/add-person-camera',
+    name: 'add-person-camera',
+    component: OpenCamAddPerson
   }
 ]
 
