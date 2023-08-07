@@ -10,7 +10,7 @@ export default {
  
  data() {
    return {
-     source: "http://localhost:8008/streaming_data/"
+     source: "http://192.168.0.74:8008/streaming_data/"
    }
  },
 

@@ -13,8 +13,11 @@ from utils.file_utils import *
 
 
 #
-PATH_TO_TARGET  = "/media/hoangphan/Data/code/acs/face_recog/save/target"
-PATH_TO_CLASS = "/media/hoangphan/Data/code/acs/face_recog/save/class.txt"
+# PATH_TO_TARGET  = "/media/hoangphan/Data/code/acs/face_recog/save/target"
+# PATH_TO_CLASS = "/media/hoangphan/Data/code/acs/face_recog/save/class.txt"
+
+PATH_TO_TARGET = os.path.abspath('../save/target')
+PATH_TO_CLASS = os.path.abspath('../save/class.txt')
 
 #
 def create_new_class(id: str, name: str):

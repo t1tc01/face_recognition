@@ -79,10 +79,12 @@ class PriorBox(object):
                     for cy, cx in product(dense_cy, dense_cx):
                         anchors += [cx, cy, s_kx, s_ky]
         # back to torch land
-        output = torch.Tensor(anchors).view(-1, 4)
+        #output = torch.Tensor(anchors).view(-1, 4)
+        output = np.array(anchors).reshape(-1, 4)
         if self.clip:
-            output.clamp_(max=1, min=0)
-        return output.numpy()
+            #output.clamp_(max=1, min=0)
+            output = np.clip(output, a_min=0, a_max=0)
+        return output #output.numpy()
 
 #Preprocess
 def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True):

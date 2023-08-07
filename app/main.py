@@ -18,7 +18,7 @@ import csv
 from utils.file_utils import *
 from utils.infer_utils import *
 
-origins = ["http://localhost:8080"]
+origins = ["http://192.168.0.74:8080"]
 
 
 
@@ -85,4 +85,4 @@ async def image_data(request: Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8008)
+    uvicorn.run(app, host="192.168.0.74", port=8008)
